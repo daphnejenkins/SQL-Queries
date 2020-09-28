@@ -20,13 +20,13 @@
 *  Example:                                                                                                            *
 *                                                                                                                      *
 *      SELECT *                                                                                                        *
-*      FROM F_ELTMONTHS(7, 2016);                                                                                      *
+*      FROM F_ELTMONTHS(2, 2017);                                                                                      *
 *                                                                                                                      *
 *                                                                                                                      *
 *      dtype | sdate      | edate                                                                                      *
-*      1     | 2016-07-01 | 2016-10-31                                                                                 *
-*      2     | 2016-10-01 | 2016-10-31                                                                                 *
-*      3     | 2015-10-01 | 2015-10-31                                                                                 *
+*      1     | 2016-07-01 | 2017-02-28                                                                                 *
+*      2     | 2017-02-01 | 2017-02-28                                                                                 *
+*      3     | 2016-02-01 | 2016-02-29                                                                                 *
 *                                                                                                                      *
 ***********************************************************************************************************************/
 
@@ -57,8 +57,17 @@ CREATE FUNCTION dbo.F_ELTMONTHS(@mnth TINYINT, @yr SMALLINT)
     -- Declares a variable used to define the third starting date
     DECLARE @sdate3 AS DATE;
 
+    -- Variable used to handle dates in the second half of the academic year
+    DECLARE @yroffset AS SMALLINT;
+
+    -- Offsets the academic year to get the correct value for the year to date year by subtracting 1
+    IF @mnth BETWEEN 1 AND 6 SET @yroffset = @yr - 1;
+
+    -- Otherwise uses the year passed by end user
+    ELSE SET @yroffset = @yr;
+
     -- Sets the value of the first starting date to the start of the fiscal year
-    SET @sdate1 = (SELECT CAST('07/01/' + CAST(@yr AS VARCHAR(4)) AS DATE));
+    SET @sdate1 = (SELECT CAST('07/01/' + CAST(@yroffset AS VARCHAR(4)) AS DATE));
 
     -- Sets the value of the second starting date to the first day of the provided month and year
     SET @sdate2 = (SELECT CAST(
@@ -94,3 +103,5 @@ CREATE FUNCTION dbo.F_ELTMONTHS(@mnth TINYINT, @yr SMALLINT)
 GO
 
 
+SELECT *
+FROM dbo.F_ELTMONTHS(2, 2017);
